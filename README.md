@@ -1,9 +1,6 @@
 # MultiGrain
 MultiGrain is a neural network architecture solving both image classification and image retrieval tasks.
 
-## Examples
-...
-
 ## Requirements
 MultiGrain requires
 * Python 3.5 or higher
