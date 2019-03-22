@@ -1,0 +1,13 @@
+name: multigrain
+channels:
+  - pytorch
+dependencies:
+  - python>=3
+  - pytorch>=1.0
+  - torchvision==0.2.2
+  - pyyaml
+  - matplotlib
+  - scikit-learn
+  - numpy
+  - pip:
+    - pretrainedmodels==0.7.4
