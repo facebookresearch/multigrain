@@ -10,7 +10,7 @@ import numpy as np
 
 
 def get_whiten(X):
-    pca = PCA(whiten=True)
+    pca = PCA(whiten=True, n_components=X.size(1))
     pca.fit(X.detach().cpu().numpy())
     m = torch.tensor(pca.mean_, dtype=torch.float)
     P = torch.tensor(pca.components_.T / np.sqrt(pca.explained_variance_), dtype=torch.float)

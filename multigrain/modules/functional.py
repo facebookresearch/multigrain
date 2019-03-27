@@ -29,12 +29,13 @@ def flatten(x, keepdims=False):
 
 def gem(x, p=3, eps=1e-6, clamp=True, add_bias=False, keepdims=False):
     if p == math.inf or p is 'inf':
-        return F.max_pool2d(x, (x.size(-2), x.size(-1)))
-    if p == 1 and not (torch.is_tensor(p) and p.requires_grad):
-        return F.avg_pool2d(x, (x.size(-2), x.size(-1)))
-    if clamp:
-        x = x.clamp(min=eps)
-    x = F.avg_pool2d(x.pow(p), (x.size(-2), x.size(-1))).pow(1.0 / p)
+        x = F.max_pool2d(x, (x.size(-2), x.size(-1)))
+    elif p == 1 and not (torch.is_tensor(p) and p.requires_grad):
+        x = F.avg_pool2d(x, (x.size(-2), x.size(-1)))
+    else:
+        if clamp:
+            x = x.clamp(min=eps)
+        x = F.avg_pool2d(x.pow(p), (x.size(-2), x.size(-1))).pow(1.0 / p)
     if add_bias:
         x = add_bias_channel(x)
     if not keepdims:
@@ -43,20 +44,14 @@ def gem(x, p=3, eps=1e-6, clamp=True, add_bias=False, keepdims=False):
 
 
 def apply_pca(vt, pca_P=None, pca_m=None):
-    B, C, H, W = vt.size()
+    do_rotation = torch.is_tensor(pca_P) and pca_P.numel() > 0
+    do_shift = torch.is_tensor(pca_P) and pca_P.numel() > 0
 
-    if pca_P is not None or pca_m is not None:
-        vt = vt.permute(0, 2, 3, 1)
-
-        vt = vt.view(B * H * W, 1, C)
-
-        if pca_m is not None:
-            vt = vt - pca_m.view(1, 1, -1)
-        if pca_P is not None:
+    if do_rotation or do_shift:
+        if do_shift:
+            vt = vt - pca_m
+        if do_rotation:
             vt = torch.matmul(vt, pca_P)
-
-        vt = vt.view(B, H, W, C)
-        vt = vt.permute(0, 3, 1, 2)
     return vt
 
 

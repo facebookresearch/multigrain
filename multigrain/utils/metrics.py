@@ -51,17 +51,33 @@ class HistoryMeter(object):
 
     def reset(self):
         self.hist = []
-        self.val = 0
-        self.avg = 0
-        self.sum = 0
-        self.count = 0
+        self.partials = []
 
-    def update(self, val, n=1):
-        self.hist.append(val)
-        self.val = val
-        self.sum += val * n
-        self.count += n
-        self.avg = self.sum / self.count
+    def update(self, x):
+        self.hist.append(x)
+        # full precision summation based on http://code.activestate.com/recipes/393090/
+        i = 0
+        for y in self.partials:
+            if abs(x) < abs(y):
+                x, y = y, x
+            hi = x + y
+            lo = y - (hi - x)
+            if lo:
+                self.partials[i] = lo
+                i += 1
+            x = hi
+        self.partials[i:] = [x]
+
+    @property
+    def val(self):
+        return self.hist[-1] if self.hist else 0
+
+    @property
+    def avg(self):
+        """
+        Alternative to AverageMeter without floating point errors
+        """
+        return sum(self.partials, 0.0) / len(self.hist) if self.hist else 0
 
 
 # Retrieval metrics

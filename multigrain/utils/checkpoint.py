@@ -54,17 +54,19 @@ class CheckpointHandler(object):
     def save_metrics(self, metrics_history):
         ordered_dump(metrics_history, osp.join(self.expdir, self.metrics + '.yaml'))
 
-    def save(self, model, optimizer, metrics_history, epoch, extra=None):
+    def save(self, model, epoch, optimizer=None, metrics_history=None, extra=None):
         module = model.module if isinstance(model, nn.DataParallel) else model
-        check = dict(model_state=module.state_dict(),
-                     optimizer_state=optimizer.state_dict)
+        check = dict(model_state=module.state_dict())
+        if optimizer is not None:
+            check['optimizer_state'] = optimizer.state_dict()
         if extra is not None:
             check['extra'] = extra
         torch.save(check, osp.join(self.expdir, self.prefix + '{:d}.pth'.format(epoch)))
-        self.save_metrics(metrics_history)
+        if metrics_history is not None:
+            self.save_metrics(metrics_history)
         self.delete_old_checkpoints(epoch)
         if self.verbose:
-            print('Saved checkpoint and metrics in', self.expdir)
+            print('Saved checkpoint in', self.expdir)
 
     def load_state_dict(self, model, state_dict):
         module = model.module if isinstance(model, nn.DataParallel) else model

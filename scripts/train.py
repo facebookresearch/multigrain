@@ -9,6 +9,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 from torch.optim import SGD
 
+import set_path
 from multigrain.utils import logging
 from multigrain.augmentations import get_transforms, transforms_list
 from multigrain.lib import get_multigrain, RASampler
@@ -58,7 +59,7 @@ def run(args):
                                                  num_workers=args.workers, pin_memory=True)
 
     model = get_multigrain(args.backbone, p=args.pooling_exponent, include_sampling=not args.global_sampling,
-                           pretrained_backbone=args.pretrained_backbone, checkpoint=args.sublinear)
+                           pretrained_backbone=args.pretrained_backbone)
     print("Multigrain model with {} backbone and p={} pooling:".format(args.backbone, args.pooling_exponent))
     print(model)
 
@@ -120,6 +121,9 @@ def run(args):
         batches_accumulated += 1
 
         if batches_accumulated == args.gradient_accum:
+            mag = {}
+            for (name, p) in model.named_parameters():
+                mag[name] = p.grad.norm().item()
             optimizers.step()
             batches_accumulated = 0
 
@@ -153,7 +157,7 @@ def run(args):
     if checkpoints.exists(args.resume_epoch, args.resume_from):
         begin_epoch, loaded_extra = checkpoints.resume(model, optimizers, metrics_history, args.resume_epoch, args.resume_from)
         if 'beta' in loaded_extra:
-            beta.data = loaded_extra['beta'].data
+            beta.data.copy_(loaded_extra['beta'])
         else:
             print('(re)initialized beta to {}'.format(beta.item()))
     else:
@@ -195,7 +199,7 @@ def run(args):
 
         if not args.dry:
             utils.make_plots(metrics_history, args.expdir)
-            checkpoints.save(model, optimizers, metrics_history, epoch + 1, extra)
+            checkpoints.save(model, epoch + 1, optimizers, metrics_history, extra)
 
 
 if __name__ == "__main__":
@@ -236,13 +240,12 @@ if __name__ == "__main__":
     parser.add_argument('--preload-dir-imagenet', default=None,
                         help='preload imagenet in this directory (useful for slow networks')
     parser.add_argument('--workers', default=20, type=int, help='number of data-fetching workers')
-    parser.add_argument('--sublinear', type=int, default=None, help='Use sublinear memory backward (chunk size)')
     parser.add_argument('--dry', action='store_true', help='do not store anything')
 
     args = parser.parse_args()
-    if args.repeated_augmentations == 1 and args.classif_weight != 1.0:
-        raise ValueError('Margin loss in undefined for repeated_augmentations == 1; set --classif-weight=1.0')
     if args.repeated_augmentations == 1:
+        if args.classif_weight != 1.0:
+            raise ValueError('Margin loss in undefined for repeated_augmentations == 1; set --classif-weight=1.0')
         # No sampling is actually computed in this case, but the implementation requires the following:
         args.global_sampling = True
 

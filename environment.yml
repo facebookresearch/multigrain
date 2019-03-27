@@ -4,6 +4,7 @@ channels:
 dependencies:
   - python>=3
   - pytorch>=1.0
+  - faiss
   - torchvision==0.2.2
   - pyyaml
   - matplotlib

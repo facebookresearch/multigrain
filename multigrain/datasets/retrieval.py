@@ -243,18 +243,3 @@ class CopyDays(DownloadableDataset):
         return_dict['input'] = im
         return return_dict
 
-#
-# class Distractors(data.Dataset):
-#     """
-#     Distractor dataset
-#     Finds images in subfolders recursively
-#     """
-#
-#
-#
-#
-# class Distracted(data.Dataset):
-#     """
-#     Distracts a retrieval dataset with distractors
-#     """
-#     def __init__(self, dataset, distractors):

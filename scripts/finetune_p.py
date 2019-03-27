@@ -8,6 +8,7 @@ import torch
 from torch.utils.data import DataLoader, Subset
 from torch.optim import SGD
 
+import set_path
 from multigrain.utils import logging
 from multigrain.augmentations import get_transforms
 from multigrain.lib import get_multigrain, list_collate
@@ -15,7 +16,6 @@ from multigrain.datasets import IN1K, IdDataset
 from multigrain import utils
 from multigrain.modules import MultiOptim
 from multigrain.backbones import backbone_list
-torch.multiprocessing.set_sharing_strategy('file_system')  # TODO: Remove
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import yaml
@@ -39,6 +39,7 @@ def run(args):
 
     args.cuda = not args.no_cuda
     args.validate_first = not args.no_validate_first
+    args.validate = not args.no_validate
 
     if not args.dry:
         utils.ifmakedirs(args.expdir)
@@ -148,14 +149,15 @@ def run(args):
     model.eval()  # freeze batch normalization
     metrics = loop(loaders['train'], training_step, 0, 'train_')
 
-    model.eval()
-    metrics.update(loop(loaders['val'], validation_step, 0, 'val_'))
+    if args.validate:
+        model.eval()
+        metrics.update(loop(loaders['val'], validation_step, 0, 'val_'))
 
-    metrics_history[1] = metrics
+        metrics_history[1] = metrics
 
     if not args.dry:
         utils.make_plots(metrics_history, args.expdir)
-        checkpoints.save(model, optimizers, metrics_history, 1)
+        checkpoints.save(model, 1, optimizers, metrics_history)
 
 
 if __name__ == "__main__":
@@ -173,8 +175,10 @@ if __name__ == "__main__":
     parser.add_argument('--images-per-class', default=50, type=int,
                         help='use a training subset of N images per class for the finetuning')
     parser.add_argument('--backbone', default='resnet50', choices=backbone_list, help='backbone architecture')
-    parser.add_argument('--pretrained-backbone', action='store_true', help='use pretrained backbone')
+    parser.add_argument('--pretrained-backbone', action='store_const', const='imagenet', help='use pretrained backbone')
     parser.add_argument('--no-validate-first', action='store_true', help='do not validate before training')
+    parser.add_argument('--no-validate', action='store_true',
+                        help='do not validate after training')
     parser.add_argument('--init-pooling-exponent', default=None, type=float,
                         help='pooling exponent in GeM pooling (default: use value from checkpoint)')
     parser.add_argument('--no-cuda', action='store_true', help='do not use CUDA')
@@ -183,25 +187,7 @@ if __name__ == "__main__":
                         help='preload imagenet in this directory (useful for slow networks')
     parser.add_argument('--workers', default=20, type=int, help='number of data-fetching workers')
     parser.add_argument('--dry', action='store_true', help='do not store anything')
-    parser.add_argument('--block', action='store_true', help='block other clients for that experiment')  # TODO: Remove
-    parser.add_argument('--force', action='store_true', help='block other clients for that experiment')
 
     args = parser.parse_args()
-
-    from socket import gethostname  # TODO: Remove
-    hostname = gethostname()
-    if 'estragon' in hostname:
-        args.preload_dir_imagenet = '/esat/estragon/tmp/ilsvrc2012'
-    if 'vladimir' in hostname:
-        args.preload_dir_imagenet = '/esat/estragon/tmp/ilsvrc2012'
-    if 'wulfenite' in hostname:
-        args.preload_dir_imagenet = '/esat/wulfenite/mberman/datasets/ilsvrc2012/'
-
-    if osp.isfile(osp.join(args.expdir, 'block')) and not args.force:
-        raise SystemExit(0)
-    if args.block:
-        utils.ifmakedirs(args.expdir)
-        with open(osp.join(args.expdir, 'block'), 'w'):
-            pass
 
     run(args)

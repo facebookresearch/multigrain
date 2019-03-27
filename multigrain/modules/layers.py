@@ -73,29 +73,3 @@ class Layer(nn.Module):
             kwargs = ', ' + kwargs
         return 'Layer(name=' + repr(self.name) + kwargs + ')'
 
-
-class IntegratedLinear(nn.Linear):
-    """
-    Linear, but assumes last component of input is bias multiplier
-    """
-    def __init__(self, *args, **kwargs):
-        converted = None
-        if isinstance(args[0], nn.Linear):
-            converted = args[0]
-            assert len(args) == 1 and len(kwargs) == 0
-            in_features = converted.in_features
-            out_features = converted.out_features
-            bias = converted.bias is not None
-            args = [in_features, out_features, bias]
-        super().__init__(*args, **kwargs)
-        if converted is not None:
-            self.weight.data = converted.weight.data.clone()
-            if converted.bias is not None:
-                self.bias.data = converted.bias.data.clone()
-
-    def forward(self, input):
-        if input.dim() != 2:
-            raise ValueError('IntegratedLinear expects 2D inputs, got input of size {}'.format(input.size()))
-        if self.bias is None:
-            raise ValueError('IntegratedLinear should have a bias')
-        return F.linear(input, torch.cat((self.weight, self.bias.view(-1, 1)), dim=1), None)

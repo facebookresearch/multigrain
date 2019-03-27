@@ -1,6 +1,9 @@
 # MultiGrain
 MultiGrain is a neural network architecture solving both image classification and image retrieval tasks.
 
+## Examples
+...
+
 ## Requirements
 MultiGrain requires
 * Python 3.5 or higher
@@ -16,17 +19,18 @@ The requirements can be installed:
 
 * Training
 
-`scripts/train.py`...
+`scripts/train.py` trains a multigrain architecture
 
 * Input size fine-tuning of GeM exponent
 
-`scripts/finetune_p.py` determines the optimal `p` for a given input size by fine-tuning.
+`scripts/finetune_p.py` determines the optimal p\* for a given input resolution by fine-tuning. Alternatively one may use cross-validation to determine p\*.
 
 * Whitening
 `scripts/whiten.py` computes a PCA whitening and modifies the network accordingly.
 
 * Evaluation
 `scripts/eval.py` evaluates the network on standard benchmarks.
+Implementation on retrieval benchmarks is in progress, for now only the classification evaluation implemented.
 
 
 ## Citation
@@ -52,3 +56,5 @@ See the [CONTRIBUTING](CONTRIBUTING.md) file for how to help out.
 
 ## License
 MultiGrain is [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) licensed, as found in the LICENSE file.
+
+AutoAugment implementation based on https://github.com/DeepVoltaire/AutoAugment

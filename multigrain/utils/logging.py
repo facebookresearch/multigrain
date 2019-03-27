@@ -18,6 +18,7 @@ def num_fmt(num, n=1):
     num = float(('{:.' + str(n - 1) + 'e}').format(num))
     return str(int(num) if num.is_integer() else num)
 
+
 # https://stackoverflow.com/a/21912744/805502
 def ordered_load(stream, Loader=yaml.Loader, object_pairs_hook=OD):
     if not hasattr(stream, 'read'):  # filename instead of stream

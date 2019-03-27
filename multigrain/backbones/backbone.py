@@ -33,15 +33,13 @@ class BackBone(nn.Module):
     Base networks with output dict and standarized structure
     Returns embedding, classifier_output
     """
-    def __init__(self, net, checkpoint=False, **kwargs):
+    def __init__(self, net, **kwargs):
         super().__init__()
-        self.checkpoint = checkpoint
         if isinstance(net, str):
             if net not in backbone_list:
                 raise ValueError('Available backbones:', ', '.join(backbone_list))
             net = multigrain.backbones.backbone.__dict__[net](**kwargs)
         children = list(net.named_children())
-        self.whitening = None
         self.pre_classifier = None
         if type(net).__name__ == 'ResNet':
             self.features = nn.Sequential(OD(children[:-2]))
@@ -59,6 +57,7 @@ class BackBone(nn.Module):
             self.classifier = children[-1][1]
         else:
             raise NotImplementedError('Unknown base net', type(net).__name__)
+        self.whitening = None
 
     def forward(self, input):
         output = {}
@@ -67,16 +66,11 @@ class BackBone(nn.Module):
             features = map(self.features, [i.unsqueeze(0) for i in input])
             embedding = torch.cat([self.pool(f) for f in features], 0)
         else:
-            if self.checkpoint:
-                input.requires_grad = True
-                features = torch.utils.checkpoint.checkpoint_sequential(self.features,
-                                                                        len(self.features)//self.checkpoint,
-                                                                        input)
-            else:
-                features = self.features(input)
+            features = self.features(input)
             embedding = self.pool(features)
         if self.whitening is not None:
             embedding = self.whitening(embedding)
+
         classifier_input = embedding
         if self.pre_classifier is not None:
             classifier_input = self.pre_classifier(classifier_input)
