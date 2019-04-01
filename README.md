@@ -11,14 +11,8 @@ BibTeX reference:
          Kokkinos, Iasonas and Douze, Matthijs},
         title = "{MultiGrain: a unified image embedding for classes and instances}",
       journal = {arXiv e-prints},
-     keywords = {Computer Science - Computer Vision and Pattern Recognition},
          year = "2019",
         month = "Feb",
-          eid = {arXiv:1902.05509},
-        pages = {arXiv:1902.05509},
-archivePrefix = {arXiv},
-       eprint = {1902.05509},
- primaryClass = {cs.CV},}
 ```
 Please cite it if you use it. 
 
@@ -57,6 +51,9 @@ The network takes images in any resolution. Preprocessing is just to remap RGB t
 
 ## Evaluation of the networks
 
+`scripts/eval.py` evaluates the network on standard benchmarks.
+Implementation on retrieval benchmarks is in progress, for now only the classification evaluation implemented.
+
 To reproduce the classification results from Table 2 in the paper, run 
 
 
@@ -68,12 +65,9 @@ it should output GIST
 
 ## Training 
 
+The training is performed in three steps. 
 
-
-
-# Code structure 
-
-* Training
+* Full training
 
 `scripts/train.py` trains a multigrain architecture
 
@@ -84,9 +78,24 @@ it should output GIST
 * Whitening
 `scripts/whiten.py` computes a PCA whitening and modifies the network accordingly.
 
-* Evaluation
-`scripts/eval.py` evaluates the network on standard benchmarks.
-Implementation on retrieval benchmarks is in progress, for now only the classification evaluation implemented.
+For example, the result XXX was obtained with
+
+```
+# train network
+
+
+# fine-tune p*
+
+
+# whitening 
+
+```
+
+
+## Fine-tuning existing network
+
+In appendix XX we report fine-tuning results on XXXnet. 
+This experience can be reproduced with:
 
 
 
