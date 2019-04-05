@@ -71,7 +71,10 @@ class Bound(object):
         return data.clamp_(self.lower, self.upper)
 
 
-def get_transforms(Dataset=IN1K, input_size=224, kind='full', crop=True, need=('train', 'val')):
+def get_transforms(Dataset=IN1K, input_size=224, kind='full', crop=True, need=('train', 'val'), backbone=None):
+    mean, std = Dataset.MEAN, Dataset.STD
+    if backbone is not None and backbone in ['pnasnet5large', 'nasnetamobile']:
+        mean, std = [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]
     transformations = {}
     if 'train' in need:
         if kind == 'torch':
@@ -79,7 +82,7 @@ def get_transforms(Dataset=IN1K, input_size=224, kind='full', crop=True, need=('
                 transforms.RandomResizedCrop(input_size),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
-                transforms.Normalize(Dataset.MEAN, Dataset.STD),
+                transforms.Normalize(mean, std),
             ])
         elif kind == 'full':
             transformations['train'] = transforms.Compose([
@@ -89,7 +92,7 @@ def get_transforms(Dataset=IN1K, input_size=224, kind='full', crop=True, need=('
                 transforms.ToTensor(),
                 Lighting(0.1, Dataset.EIG_VALS, Dataset.EIG_VECS),
                 Bound(0., 1.),
-                transforms.Normalize(Dataset.MEAN, Dataset.STD),
+                transforms.Normalize(mean, std),
             ])
         elif kind == 'senet':
             transformations['train'] = transforms.Compose([
@@ -99,7 +102,7 @@ def get_transforms(Dataset=IN1K, input_size=224, kind='full', crop=True, need=('
                 transforms.ToTensor(),
                 Lighting(0.1, Dataset.EIG_VALS, Dataset.EIG_VECS),
                 Bound(0., 1.),
-                transforms.Normalize(Dataset.MEAN, Dataset.STD),
+                transforms.Normalize(mean, std),
             ])
         elif kind == 'AA':
             transformations['train'] = transforms.Compose([
@@ -107,7 +110,7 @@ def get_transforms(Dataset=IN1K, input_size=224, kind='full', crop=True, need=('
                 transforms.RandomHorizontalFlip(),
                 ImageNetPolicy(),
                 transforms.ToTensor(),
-                transforms.Normalize(Dataset.MEAN, Dataset.STD),
+                transforms.Normalize(mean, std),
             ])
         else:
             raise ValueError('Transforms kind {} unknown'.format(kind))
@@ -117,12 +120,12 @@ def get_transforms(Dataset=IN1K, input_size=224, kind='full', crop=True, need=('
                 [Resize(int((256 / 224) * input_size)),  # to maintain same ratio w.r.t. 224 images
                  transforms.CenterCrop(input_size),
                  transforms.ToTensor(),
-                 transforms.Normalize(Dataset.MEAN, Dataset.STD)])
+                 transforms.Normalize(mean, std)])
         else:
             transformations['val'] = transforms.Compose(
                 [Resize(input_size, largest=True),  # to maintain same ratio w.r.t. 224 images
                  transforms.ToTensor(),
-                 transforms.Normalize(Dataset.MEAN, Dataset.STD)])
+                 transforms.Normalize(mean, std)])
     return transformations
 
 transforms_list = ['torch', 'full', 'senet', 'AA']

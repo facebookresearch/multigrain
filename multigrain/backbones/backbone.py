@@ -11,12 +11,13 @@ import multigrain
 from torchvision.models import resnet18, resnet50, resnet101, resnet152
 from pretrainedmodels.models import senet154
 from .pnasnet import pnasnet5large
+from .nasnet_mobile import nasnetamobile
 from collections import OrderedDict as OD
 from multigrain.modules.layers import Layer
 # torch.utils.checkpoint.preserve_rng_state=False
 
 
-backbone_list = ['resnet18', 'resnet50', 'resnet101', 'resnet152', 'senet154', 'pnasnet5large']
+backbone_list = ['resnet18', 'resnet50', 'resnet101', 'resnet152', 'senet154', 'pnasnet5large', 'nasnetamobile']
 
 
 class Features(nn.Module):
@@ -50,7 +51,7 @@ class BackBone(nn.Module):
             self.pool = children[-3][1]
             self.pre_classifier = children[-2][1]
             self.classifier = children[-1][1]
-        elif type(net).__name__ == 'PNASNet5Large':
+        elif type(net).__name__ in ['PNASNet5Large', 'NASNetAMobile']:
             self.features = nn.Sequential(Features(net), nn.ReLU())
             self.pool = children[-3][1]
             self.pre_classifier = children[-2][1]

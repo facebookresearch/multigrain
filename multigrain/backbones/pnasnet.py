@@ -9,8 +9,6 @@ Monkey-patches https://github.com/Cadene/pretrained-models.pytorch/blob/master/p
 The source implementation cannot be applied to images of arbitrary shape
 Here we add cropping operations before additions and concatenations to address this.
 """
-
-from __future__ import print_function, division, absolute_import
 import pretrainedmodels
 
 import torch
@@ -76,7 +74,7 @@ def cell_forward(self, x_left, x_right):
     return x_out
 
 
-def pnasnet5large(*args, **kwargs):
+def pnasnet5large(*args, num_classes=1000, **kwargs):
     pretrainedmodels.models.pnasnet.CellBase.cell_forward = cell_forward
-    model = pretrainedmodels.models.pnasnet5large(*args, **kwargs)
+    model = pretrainedmodels.models.pnasnet5large(*args, num_classes=num_classes, **kwargs)
     return model
