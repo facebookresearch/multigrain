@@ -43,7 +43,7 @@ We provide pre-trained networks with ResNet-50 trunks for the following settings
 |  1  | 3 |     full     |  76.9 |   [joint_3B_1.0.pth](https://dl.fbaipublicfiles.com/multigrain/multigrain_models/joint_3B_1.0.pth)  |
 | 0.5 | 1 |     full     |  77.0 |   [joint_1B_0.5.pth](https://dl.fbaipublicfiles.com/multigrain/multigrain_models/joint_1B_0.5.pth)  |
 | 0.5 | 3 |     full     |  77.4 |   [joint_3B_0.5.pth](https://dl.fbaipublicfiles.com/multigrain/multigrain_models/joint_3B_0.5.pth)  |
-| 0.5 | 3 |  autoaugment |  78.2 | [joint_3BAA+_0.5.pth](https://dl.fbaipublicfiles.com/multigrain/multigrain_models/joint_3BAA+_0.5.pth) |
+| 0.5 | 3 |  autoaugment |  78.2 | [joint_3BAA_0.5.pth](https://dl.fbaipublicfiles.com/multigrain/multigrain_models/joint_3BAA_0.5.pth) |
 
 To load a network, use the following PyTorch code: 
 
