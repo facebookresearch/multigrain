@@ -4,7 +4,7 @@
 
 MultiGrain is a neural network architecture that solves both image classification and image retrieval tasks.
 
-The method is described in "MultiGrain: a unified image embedding for classes and instances" ([ArXiV link](https://arxiv.org/abs/1902.05509) ). 
+The method is described in "MultiGrain: a unified image embedding for classes and instances" ([ArXiV link](https://arxiv.org/abs/1902.05509)). 
 
 BibTeX reference:
 ```bibtex
