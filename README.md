@@ -98,7 +98,7 @@ __Important parameters__:
 
 __Other useful parameters__:
 * `--expdir`: dedicated directory for the experiments
-* `--restore-from`: takes either an expdir or a model checkpoint file to restore from
+* `--resume-from`: takes either an expdir or a model checkpoint file to restore from
 * `--pretrained-backbone`: initialized backbone weights from model zoo
    
 
