@@ -11,7 +11,7 @@ BibTeX reference:
 @ARTICLE{2019arXivMultiGrain,
        author = {Berman, Maxim and J{\'e}gou, Herv{\'e} and Vedaldi Andrea and
          Kokkinos, Iasonas and Douze, Matthijs},
-        title = "{MultiGrain: a unified image embedding for classes and instances}",
+        title = "{{MultiGrain}: a unified image embedding for classes and instances}",
       journal = {arXiv e-prints},
          year = "2019",
         month = "Feb",
