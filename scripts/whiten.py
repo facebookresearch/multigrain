@@ -38,7 +38,7 @@ def run(args):
 
     collate_fn = dict(collate_fn=list_collate) if args.input_crop == 'rect' else {}
 
-    transforms = get_transforms(input_size=args.input_size, crop=(args.input_crop == 'square'), need=('val',))
+    transforms = get_transforms(input_size=args.input_size, crop=(args.input_crop == 'square'), need=('val',), backbone=args.backbone)
     dataset = ListDataset(args.whiten_path, args.whiten_list, transforms['val'])
     if args.num_whiten_images != -1:
         dataset = Subset(dataset, list(range(args.num_whiten_images)))
@@ -102,7 +102,7 @@ if __name__ == "__main__":
                                          formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument('--expdir', default='experiments/resnet50/finetune500_whitened', help='destination directory for checkpoint')
     parser.add_argument('--resume-epoch', default=-1, type=int, help='resume epoch (-1: last, 0: from scratch)')
-    parser.add_argument('--resume-from', default='experiments/resnet50/finetune500', help='source experiment to whiten')
+    parser.add_argument('--resume-from', default=None, help='source experiment to whiten')
     parser.add_argument('--input-size', default=500, type=int, help='images input size')
     parser.add_argument('--input-crop', default='rect', choices=['square', 'rect'], help='crop the input or not')
     parser.add_argument('--batch-size', default=8, type=int, help='batch size')

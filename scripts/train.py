@@ -45,7 +45,7 @@ def run(args):
         utils.ifmakedirs(args.expdir)
         logging.print_file(argstr, argfile)
 
-    transforms = get_transforms(IN1K, args.input_size, args.augmentation)
+    transforms = get_transforms(IN1K, args.input_size, args.augmentation, args.backbone)
     datas = {}
     for split in ('train', 'val'):
         imload = preloader(args.imagenet_path, args.preload_dir_imagenet) if args.preload_dir_imagenet else default_loader
@@ -55,8 +55,8 @@ def run(args):
                        batch_sampler=RASampler(len(datas['train']), args.batch_size, args.repeated_augmentations,
                                                args.epoch_len_factor, shuffle=True, drop_last=False),
                        num_workers=args.workers, pin_memory=True)
-    loaders['val'] = DataLoader(datas['val'], batch_size=args.batch_size,
-                                                 num_workers=args.workers, pin_memory=True)
+    loaders['val'] = DataLoader(datas['val'], batch_size=args.batch_size, shuffle=args.shuffle_val,
+                                num_workers=args.workers, pin_memory=True)
 
     model = get_multigrain(args.backbone, p=args.pooling_exponent, include_sampling=not args.global_sampling,
                            pretrained_backbone=args.pretrained_backbone)
@@ -205,6 +205,7 @@ def run(args):
 if __name__ == "__main__":
     parser = ArgumentParser(description="Training script for MultiGrain models", formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument('--expdir', default='experiments/resnet50', help='experiment directory')
+    parser.add_argument('--shuffle-val', action='store_true', help='shuffle val. dataset')
     parser.add_argument('--resume-epoch', default=-1, type=int, help='resume epoch (-1: last, 0: from scratch)')
     parser.add_argument('--resume-from', default=None, help='resume checkpoint file/folder (default same as experiment)')
     parser.add_argument('--learning-rate', default=0.2, type=float, help='base learning rate')

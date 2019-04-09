@@ -6,7 +6,7 @@
 #
 import torch
 from torch.utils.data import DataLoader, Subset
-from torch.optim import SGD
+from torch.optim import SGD, lr_scheduler
 
 import set_path
 from multigrain.utils import logging
@@ -45,7 +45,7 @@ def run(args):
         utils.ifmakedirs(args.expdir)
         logging.print_file(argstr, argfile)
 
-    transforms = get_transforms(IN1K, args.input_size, crop=(args.input_crop == 'square'), need=('val',))
+    transforms = get_transforms(IN1K, args.input_size, crop=(args.input_crop == 'square'), need=('val',), backbone=args.backbone)
     datas = {}
     for split in ('train', 'val'):
         datas[split] = IdDataset(IN1K(args.imagenet_path, split, transform=transforms['val']))
@@ -60,7 +60,7 @@ def run(args):
     datas['train'].dataset = Subset(datas['train'].dataset, selected)
     loaders['train'] = DataLoader(datas['train'], batch_size=args.batch_size, shuffle=True,
                                 num_workers=args.workers, pin_memory=True, **collate_fn)
-    loaders['val'] = DataLoader(datas['val'], batch_size=args.batch_size,
+    loaders['val'] = DataLoader(datas['val'], batch_size=args.batch_size, shuffle=args.shuffle_val,
                                 num_workers=args.workers, pin_memory=True, **collate_fn)
 
     model = get_multigrain(args.backbone, include_sampling=False,
@@ -111,7 +111,7 @@ def run(args):
     checkpoints = utils.CheckpointHandler(args.expdir)
 
     if checkpoints.exists(args.resume_epoch, args.resume_from):
-        checkpoints.resume(model, metrics_history=metrics_history,
+        epoch = checkpoints.resume(model, metrics_history=metrics_history,
                            resume_epoch=args.resume_epoch, resume_from=args.resume_from)
     else:
         raise ValueError('Checkpoint ' + args.resume_from + ' not found')
@@ -126,6 +126,9 @@ def run(args):
         metrics = defaultdict(utils.HistoryMeter if prefix == 'train_' else utils.AverageMeter)
         tic()
         for i, batch in enumerate(loader):
+            if prefix == 'train_':
+                lr = args.learning_rate * (1 - i / len(loader)) ** args.learning_rate_decay_power
+                optimizers['p'].param_groups[0]['lr'] = lr
             if args.cuda:
                 batch = utils.cuda(batch)
             data_time = 1000 * toc(); tic()
@@ -134,8 +137,8 @@ def run(args):
             step_metrics['batch_time'] = 1000 * toc(); tic()
             for (k, v) in step_metrics.items():
                 metrics[prefix + k].update(v, len(batch['input']))
-            print(logging.str_metrics(metrics, iter=i, num_iters=len(loader), epoch=epoch, num_epochs=1))
-        print(logging.str_metrics(metrics, epoch=epoch, num_epochs=1))
+            print(logging.str_metrics(metrics, iter=i, num_iters=len(loader), epoch=epoch, num_epochs=epoch))
+        print(logging.str_metrics(metrics, epoch=epoch, num_epochs=epoch))
         toc()
         if prefix == 'val_':
             return OD((k, v.avg) for (k, v) in metrics.items())
@@ -143,21 +146,22 @@ def run(args):
 
     if args.validate_first and 0 not in metrics_history:
         model.eval()
-        metrics_history[0] = loop(loaders['val'], validation_step, 0, 'val_')
+        metrics_history[epoch] = loop(loaders['val'], validation_step, epoch, 'val_')
         checkpoints.save_metrics(metrics_history)
 
     model.eval()  # freeze batch normalization
-    metrics = loop(loaders['train'], training_step, 0, 'train_')
+    metrics = loop(loaders['train'], training_step, epoch, 'train_')
+    metrics['last_p'] = p.item()
 
     if args.validate:
         model.eval()
-        metrics.update(loop(loaders['val'], validation_step, 0, 'val_'))
+        metrics.update(loop(loaders['val'], validation_step, epoch + 1, 'val_'))
 
-        metrics_history[1] = metrics
+        metrics_history[epoch + 1] = metrics
 
     if not args.dry:
         utils.make_plots(metrics_history, args.expdir)
-        checkpoints.save(model, 1, optimizers, metrics_history)
+        checkpoints.save(model, epoch + 1, optimizers, metrics_history)
 
 
 if __name__ == "__main__":
@@ -165,13 +169,15 @@ if __name__ == "__main__":
                                            computes the p exponent for a given input size by fine-tuning""",
                             formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument('--expdir', default='experiments/resnet50/finetune500', help='experiment destination directory')
+    parser.add_argument('--shuffle-val', action='store_true', help='shuffle val. dataset')
     parser.add_argument('--resume-epoch', default=-1, type=int, help='resume epoch (-1: last, 0: from scratch)')
-    parser.add_argument('--resume-from', default='experiments/resnet50', help='resume checkpoint file/folder')
-    parser.add_argument('--learning-rate', default=0.01, type=float, help='base learning rate')
+    parser.add_argument('--resume-from', default=None, help='resume checkpoint file/folder')
+    parser.add_argument('--learning-rate', default=0.005, type=float, help='base learning rate')
+    parser.add_argument('--learning-rate-decay-power', default=0.9, type=float, help='Power in polynomial learning rate decay')
     parser.add_argument('--momentum', default=0.9, type=float, help='momentum in SGD')
     parser.add_argument('--input-size', default=500, type=int, help='images input size')
     parser.add_argument('--input-crop', default='rect', choices=['square', 'rect'], help='crop the input or not')
-    parser.add_argument('--batch-size', default=8, type=int, help='batch size')
+    parser.add_argument('--batch-size', default=4, type=int, help='batch size')
     parser.add_argument('--images-per-class', default=50, type=int,
                         help='use a training subset of N images per class for the finetuning')
     parser.add_argument('--backbone', default='resnet50', choices=backbone_list, help='backbone architecture')

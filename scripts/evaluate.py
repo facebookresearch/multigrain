@@ -1,9 +1,3 @@
-# Copyright (c) 2015-present, Facebook, Inc.
-# All rights reserved.
-#
-# This source code is licensed under the CC-by-NC license found in the
-# LICENSE file in the root directory of this source tree.
-#
 import torch
 from torch.utils.data import DataLoader
 import faiss
@@ -38,7 +32,7 @@ def run(args):
         logging.print_file(argstr, argfile)
 
     collate_fn = dict(collate_fn=list_collate) if args.input_crop == 'rect' else {}
-    transforms = get_transforms(input_size=args.input_size, crop=(args.input_crop == 'square'), need=('val',))
+    transforms = get_transforms(input_size=args.input_size, crop=(args.input_crop == 'square'), need=('val',), backbone=args.backbone)
 
     if args.dataset.startswith('imagenet'):
         dataset = IdDataset(IN1K(args.imagenet_path,
@@ -46,7 +40,7 @@ def run(args):
                                  transform=transforms['val']))
         mode = "classification"
     else:
-        raise NotImplementedError
+        raise NotImplementedError("Retrieval evaluations not implemented yet, check datasets/retrieval.py to implement the evaluations.")
 
 
     loader = DataLoader(dataset, batch_size=args.batch_size, num_workers=args.workers, shuffle=args.shuffle,
@@ -64,7 +58,7 @@ def run(args):
         raise ValueError('Checkpoint ' + args.resume_from + ' not found')
 
     if args.pooling_exponent is not None:  # overwrite stored pooling exponent
-        p.data.fill_(args.init_pooling_exponent)
+        p.data.fill_(args.pooling_exponent)
 
     print("Multigrain model with {} backbone and p={} pooling:".format(args.backbone, p.item()))
     print(model)
@@ -91,8 +85,8 @@ def run(args):
         if mode == "classification":
             target = batch['classifier_target']
             top1, top5 = utils.accuracy(output_dict['classifier_output'], target, topk=(1, 5))
-            metrics["val_top1"].update(top1)
-            metrics["val_top5"].update(top5)
+            metrics["val_top1"].update(top1, n=len(batch['input']))
+            metrics["val_top5"].update(top5, n=len(batch['input']))
         elif mode == "retrieval":
             if index is None: index = faiss.IndexFlatL2(descriptors.size(1))
             descriptors = output_dict['normalized_embedding']
@@ -111,11 +105,11 @@ def run(args):
 if __name__ == "__main__":
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument('--dataset', choices=['imagenet-val', 'imagenet-trainaug', 'holidays', 'copydays', 'ukbench'],
-                        default='holidays', help='which evaluation to make')
+                        default='imagenet-val', help='which evaluation to make')
     parser.add_argument('--shuffle', action='store_true', help='shuffle dataset before evaluation')
     parser.add_argument('--expdir', default='experiments/resnet50/finetune500_whitened/holidays500', help='evaluation destination directory')
     parser.add_argument('--resume-epoch', default=-1, type=int, help='resume epoch (-1: last, 0: from scratch)')
-    parser.add_argument('--resume-from', default='experiments/resnet50/finetune500_whitened', help='resume checkpoint file/folder')
+    parser.add_argument('--resume-from', default=None, help='resume checkpoint file/folder')
     parser.add_argument('--input-size', default=500, type=int, help='images input size')
     parser.add_argument('--input-crop', default='rect', choices=['square', 'rect'], help='crop the input or not')
     parser.add_argument('--batch-size', default=8, type=int, help='batch size')
