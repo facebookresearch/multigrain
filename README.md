@@ -78,7 +78,7 @@ using the [joint_3B_0.5.pth](https://dl.fbaipublicfiles.com/multigrain/multigrai
 
 ### Retrieval results
 The implementation of the evaluation on the retrieval benchmarks in `evaluate.py` is in progress, but one may already use the dataloaders
- implemented in [datasets/retrieval.py](multigrain/datasets/retrieval.py)) for this purpose.
+ implemented in [datasets/retrieval.py](multigrain/datasets/retrieval.py) for this purpose.
  
 
 ## Training 
