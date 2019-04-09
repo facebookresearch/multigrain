@@ -70,11 +70,14 @@ The pretrained weights do not include whitening of the features (important for r
 
 Evaluate a network on ImageNet-val is straightforward using options from `evaluate.py`. For instance the following command:
 ```
+IMAGENET_PATH=  # the path that contains the /val and /train image directories
+
 python scripts/evaluate.py --expdir experiments/joint_3B_0.5/eval_p4_500 \
 --imagenet-path $IMAGENET_PATH --input-size 500 --dataset imagenet-val \
 --pooling-exponent 4 --resume-from joint_3B_0.5.pth
 ```
 using the [joint_3B_0.5.pth](https://dl.fbaipublicfiles.com/multigrain/multigrain_models/joint_3B_0.5.pth) pretrained weights, should reproduce the top-1/top5 results of 78.6%/94.4% given in the article in Table 2 for ResNet-50 MultiGrain p=3, λ=0.5 and p*=4 scale s*=500.
+
 
 ### Retrieval results
 The implementation of the evaluation on the retrieval benchmarks in `evaluate.py` is in progress, but one may already use the dataloaders
