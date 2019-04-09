@@ -1,5 +1,7 @@
 # MultiGrain
 
+<img src="https://user-images.githubusercontent.com/5989894/55801088-8f497280-5ad5-11e9-8759-310cd1da41f4.jpg" height="140">
+
 MultiGrain is a neural network architecture that solves both image classification and image retrieval tasks.
 
 The method is described in "MultiGrain: a unified image embedding for classes and instances" ([ArXiV link](https://arxiv.org/abs/1902.05509) ). 
