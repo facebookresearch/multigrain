@@ -49,9 +49,9 @@ We provide fine-tuned networks for scales bigger than 224, as described in the S
 
 | network | scale  | p | top-1 |                                         weights                                         |
 |:---:|:-:|:------------:|:-----:|:---------------------------------------------------------------------------------------:|
-|  NASNet-A-Mobile   | 350 px | 1 |     75.1 |   [joint_1B_1.0.pth](https://dl.fbaipublicfiles.com/multigrain/finetuned_models/nasnetamobile-finetune350.pth)  |
-|  SENet154  | 400 px | 3 |     83.0 |   [joint_3B_1.0.pth](https://dl.fbaipublicfiles.com/multigrain/finetuned_models/senet154-finetune400.pth)  |
-| PNASNet-5-Large | 500 px | 1 |     83.6 |   [joint_1B_0.5.pth](https://dl.fbaipublicfiles.com/multigrain/finetuned_models/pnasnet5large-finetune500.pth)  |
+|  NASNet-A-Mobile   | 350 px | 1.7 |     75.1 |   [joint_1B_1.0.pth](https://dl.fbaipublicfiles.com/multigrain/finetuned_models/nasnetamobile-finetune350.pth)  |
+|  SENet154  | 400 px | 1.6 |     83.0 |   [joint_3B_1.0.pth](https://dl.fbaipublicfiles.com/multigrain/finetuned_models/senet154-finetune400.pth)  |
+| PNASNet-5-Large | 500 px | 1.7 |     83.6 |   [joint_1B_0.5.pth](https://dl.fbaipublicfiles.com/multigrain/finetuned_models/pnasnet5large-finetune500.pth)  |
 
 
 To load a network, use the following PyTorch code: 
