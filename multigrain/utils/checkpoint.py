@@ -111,7 +111,7 @@ class CheckpointHandler(object):
 
         if optimizer is not None:
             if 'optimizer_state' in checkpoint:
-                optimizer.load_state_dict('optimizer_state')
+                optimizer.load_state_dict(checkpoint['optimizer_state'])
                 if self.verbose:
                     print('Optimizer state loaded from', resume_from)
             elif self.verbose:
