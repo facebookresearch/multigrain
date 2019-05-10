@@ -45,6 +45,15 @@ We provide pre-trained networks with ResNet-50 trunks for the following settings
 | 0.5 | 3 |     full     |  77.4 |   [joint_3B_0.5.pth](https://dl.fbaipublicfiles.com/multigrain/multigrain_models/joint_3B_0.5.pth)  |
 | 0.5 | 3 |  autoaugment |  78.2 | [joint_3BAA_0.5.pth](https://dl.fbaipublicfiles.com/multigrain/multigrain_models/joint_3BAA_0.5.pth) |
 
+We provide fine-tuned networks for scales bigger than 224, as described in the Supplementary E. Only the pooling coefficient is fine-tuned:
+
+| network | scale  | p | top-1 |                                         weights                                         |
+|:---:|:-:|:------------:|:-----:|:---------------------------------------------------------------------------------------:|
+|  NASNet-A-Mobile   | 350 px | 1 |     75.1 |   [joint_1B_1.0.pth](https://dl.fbaipublicfiles.com/multigrain/finetuned_models/nasnetamobile-finetune350.pth)  |
+|  SENet154  | 400 px | 3 |     83.0 |   [joint_3B_1.0.pth](https://dl.fbaipublicfiles.com/multigrain/finetuned_models/senet154-finetune400.pth)  |
+| PNASNet-5-Large | 500 px | 1 |     83.6 |   [joint_1B_0.5.pth](https://dl.fbaipublicfiles.com/multigrain/finetuned_models/pnasnet5large-finetune500.pth)  |
+
+
 To load a network, use the following PyTorch code: 
 
 ```
