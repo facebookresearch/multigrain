@@ -140,7 +140,7 @@ class Holidays(DownloadableDataset):
         self.transform = transform
         self.rotated = None
         if rotated:
-            self.rotated = yaml.load(open(osp.join(osp.dirname(__file__), 'holidays-rotate.yaml')))
+            self.rotated = yaml.load(open(osp.join(osp.dirname(__file__), 'holidays-rotate.yaml')), Loader=yaml.SafeLoader)
 
     def __len__(self):
         return len(self.imgs)

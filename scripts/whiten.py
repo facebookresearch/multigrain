@@ -6,7 +6,6 @@
 #
 import torch
 from torch.utils.data import DataLoader, Subset
-import faiss
 
 import set_path
 from multigrain.utils import logging
@@ -60,7 +59,7 @@ def run(args):
         raise ValueError('Checkpoint ' + args.resume_from + ' not found')
 
     if args.pooling_exponent is not None:  # overwrite stored pooling exponent
-        p.data.fill_(args.init_pooling_exponent)
+        p.data.fill_(args.pooling_exponent)
 
     print("Multigrain model with {} backbone and p={} pooling:".format(args.backbone, p.item()))
     print(model)
@@ -94,7 +93,7 @@ def run(args):
     model.integrate_whitening(m, P)
 
     if not args.dry:
-        checkpoints.save(model, resume_epoch)
+        checkpoints.save(model, resume_epoch if resume_epoch != -1 else 0)
 
 
 if __name__ == "__main__":

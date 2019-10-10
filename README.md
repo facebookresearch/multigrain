@@ -57,6 +57,7 @@ We provide fine-tuned networks for scales bigger than 224, as described in the S
 To load a network, use the following PyTorch code: 
 
 ```
+import torch
 from multigrain.lib import get_multigrain
 
 net = get_multigrain('resnet50')
