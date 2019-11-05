@@ -25,7 +25,7 @@ class Resize(transforms.Resize):
 
     @staticmethod
     def target_size(w, h, size, largest=False):
-        if h < w and largest:
+        if (h < w) == largest:
             w, h = size, int(size * h / w)
         else:
             w, h = int(size * w / h), size
