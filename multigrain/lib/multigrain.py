@@ -69,8 +69,13 @@ class MultiGrain(BackBone):
         Set whitening parameters and add their reverse in classifier (see scripts/whiten.py)
         """
         Pinv = P.t().double().inverse()
-        self.whitening.pca.pca_m.data.resize_(m.size()).copy_(m)
-        self.whitening.pca.pca_P.data.resize_(P.size()).copy_(P)
+        if False:
+            # does not work w/ torch 1.2
+            self.whitening.pca.pca_m.data.resize_(m.size()).copy_(m)
+            self.whitening.pca.pca_P.data.resize_(P.size()).copy_(P)
+        else:
+            self.whitening.pca.pca_m = torch.clone(m)
+            self.whitening.pca.pca_P = torch.clone(P)
         W = self.classifier.weight
         self.classifier.bias = nn.Parameter(m.to(W.device).matmul(W.data.t()))
         W.data = torch.matmul(W.data.double(), Pinv.to(W.device)).float()
